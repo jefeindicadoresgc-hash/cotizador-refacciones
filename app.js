@@ -2,36 +2,72 @@ import { db } from "./firebase-config.js";
 import { collection, addDoc, query, where, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { cargarSobrantesDesdeDB } from "./sobrantes.js";
 import { cargarInventarioDesdeDB } from "./inventario.js";
+import { cargarObsoletosDesdeDB } from "./obsoletos.js";
+import { recrearCotizacion } from "./recrear.js";
 
 let sistemaDesbloqueado = false;
 let cotizacionGuardadaEnNube = false;
 
+// ================= INICIALIZACIÓN Y NAVEGACIÓN =================
 window.onload = async () => {
     generarFolioYFecha();
     agregarFila(); 
-    // Cargar bases de datos silenciosamente
-    await Promise.all([ cargarSobrantesDesdeDB(), cargarInventarioDesdeDB() ]);
     
+    // Cargar las 3 bases de datos a la vez
+    await Promise.all([ cargarSobrantesDesdeDB(), cargarInventarioDesdeDB(), cargarObsoletosDesdeDB() ]);
+    
+    // Configurar botones del menú lateral
     document.getElementById('btn-nav-nueva').onclick = () => cambiarVista('nueva');
     document.getElementById('btn-nav-historial').onclick = () => cambiarVista('buscador');
+    document.getElementById('btn-nav-inventario').onclick = () => cambiarVista('inventario');
     document.getElementById('btn-nav-almacen').onclick = () => cambiarVista('sobrantes');
+
+    // ALERTA 7 DÍAS (OBSOLETOS)
+    if(window.alertaObsoletos7Dias) {
+        Swal.fire({
+            toast: true, position: 'bottom-end', icon: 'warning', 
+            title: '⚠️ El reporte de piezas obsoletas tiene más de 7 días.\nSe recomienda actualizarlo.',
+            showConfirmButton: false, timer: 7000
+        });
+    }
+
+    // CANDADO DIARIO (INVENTARIO PRINCIPAL)
+    if(!window.inventarioAlDia) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Inventario Desactualizado',
+            text: 'Debes cargar el inventario del día de hoy antes de realizar cualquier cotización.',
+            confirmButtonText: 'Ir a cargar Inventario',
+            allowOutsideClick: false
+        }).then(() => {
+            cambiarVista('inventario');
+        });
+    }
 };
 
 function cambiarVista(vista) {
     document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('sec-nueva-cotizacion').style.display = 'none';
     document.getElementById('sec-buscador').style.display = 'none';
+    document.getElementById('sec-inventario').style.display = 'none';
     document.getElementById('sec-sobrantes').style.display = 'none';
     
     if(vista === 'nueva') {
+        if(!window.inventarioAlDia) {
+            Swal.fire('Atención', 'Sube el inventario diario antes de cotizar.', 'error');
+            document.getElementById('btn-nav-inventario').classList.add('active');
+            document.getElementById('sec-inventario').style.display = 'block';
+            return;
+        }
         document.getElementById('btn-nav-nueva').classList.add('active');
         document.getElementById('sec-nueva-cotizacion').style.display = 'block';
     } else if(vista === 'buscador') {
         document.getElementById('btn-nav-historial').classList.add('active');
         document.getElementById('sec-buscador').style.display = 'block';
-        if(document.getElementById('vin-search').value === '') {
-            cargarUltimasCotizaciones();
-        }
+        if(document.getElementById('vin-search').value === '') cargarUltimasCotizaciones();
+    } else if(vista === 'inventario') {
+        document.getElementById('btn-nav-inventario').classList.add('active');
+        document.getElementById('sec-inventario').style.display = 'block';
     } else if(vista === 'sobrantes') {
         document.getElementById('btn-nav-almacen').classList.add('active');
         document.getElementById('sec-sobrantes').style.display = 'block';
@@ -48,8 +84,14 @@ function generarFolioYFecha() {
     document.getElementById('fecha').value = `${dd}/${mm}/20${yy}`;
 }
 
-// ==== CANDADO VIN ====
+// ================= CANDADO VIN =================
 document.getElementById('vin').addEventListener('input', async function() {
+    if(!window.inventarioAlDia) {
+        Swal.fire('Bloqueado', 'Actualiza el inventario del día primero.', 'error');
+        this.value = '';
+        return;
+    }
+    
     this.value = this.value.toUpperCase();
     const longitud = this.value.length;
     document.getElementById('vin-counter').innerText = `${longitud}/17`;
@@ -105,10 +147,10 @@ async function verificarHistorialVIN(vin) {
                 }
             });
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Error buscando VIN:", e); }
 }
 
-// ==== VERIFICACIÓN DE REFACCIONES EN VIVO ====
+// ================= VERIFICACIÓN MÚLTIPLE DE REFACCIONES =================
 window.verificarPieza = function(inputElement) {
     const tr = inputElement.closest('tr');
     const numLimpio = inputElement.value.replace(/[^A-Z0-9]/ig, '').toUpperCase();
@@ -126,7 +168,7 @@ window.verificarPieza = function(inputElement) {
     const descInput = tr.querySelector('.descripcion');
     const precioInput = tr.querySelector('.precio');
 
-    // Buscar en Inventario
+    // 1. INVENTARIO PRINCIPAL
     const inv = window.piezasInventario.find(p => p.cleanSerie === numLimpio);
     if(inv) {
         if(!descInput.value) descInput.value = inv.descripcion;
@@ -136,11 +178,17 @@ window.verificarPieza = function(inputElement) {
         else alertasHTML += `<span style="color: #888; font-size: 11px; display: block; font-weight: bold; margin-top: 3px;">❌ ALMACÉN: Agotado (0 pz)</span>`;
     }
 
-    // Buscar en Sobrantes
+    // 2. SOBRANTES
     const sobrante = window.piezasSobrantes.find(p => p.cleanSerie === numLimpio);
     if(sobrante) {
         alertasHTML += `<span style="color: #E63312; font-size: 11px; display: block; font-weight: bold; margin-top: 3px;">🚨 SOBRANTE EN ALMACÉN (Cant: ${sobrante.cantidad})</span>`;
         if(!descInput.value) descInput.value = sobrante.descripcion;
+    }
+
+    // 3. OBSOLETOS
+    const obsoleto = window.piezasObsoletas.find(p => p.cleanSerie === numLimpio);
+    if(obsoleto) {
+        alertasHTML += `<span style="color: #FF8C00; font-size: 11px; display: block; font-weight: bold; margin-top: 3px;">⚠️ PIEZA OBSOLETA: ${obsoleto.clasificacion}</span>`;
     }
 
     container.innerHTML = alertasHTML;
@@ -163,7 +211,7 @@ function agregarFila() {
 
 window.calcularTotales = function() {
     let subtotal = 0;
-    cotizacionGuardadaEnNube = false;
+    cotizacionGuardadaEnNube = false; 
 
     document.querySelectorAll('#tabla-refacciones tbody tr').forEach(fila => {
         const canti = parseFloat(fila.querySelector('.canti').value) || 0;
@@ -175,15 +223,17 @@ window.calcularTotales = function() {
 
     const iva = subtotal * 0.16;
     const total = subtotal + iva;
+
     document.getElementById('lbl-subtotal').dataset.raw = subtotal;
     document.getElementById('lbl-iva').dataset.raw = iva;
     document.getElementById('lbl-total').dataset.raw = total;
+
     document.getElementById('lbl-subtotal').innerText = '$' + subtotal.toLocaleString('es-MX', {minimumFractionDigits: 2});
     document.getElementById('lbl-iva').innerText = '$' + iva.toLocaleString('es-MX', {minimumFractionDigits: 2});
     document.getElementById('lbl-total').innerText = '$' + total.toLocaleString('es-MX', {minimumFractionDigits: 2});
 };
 
-// ==== GUARDADO Y PDF ====
+// ================= PROCESAR COTIZACIÓN (GUARDAR Y PDF) =================
 async function procesarCotizacion(generarPDF = false) {
     const folio = document.getElementById('folio-txt').innerText;
     const fecha = document.getElementById('fecha').value;
@@ -191,7 +241,8 @@ async function procesarCotizacion(generarPDF = false) {
     const modelo = document.getElementById('modelo').value;
     const tipo = document.getElementById('tipo-cotizacion').value;
     
-    let refaccionesParaPDF = []; let refaccionesParaDB = [];
+    let refaccionesParaPDF = []; 
+    let refaccionesParaDB = [];
 
     document.querySelectorAll('#tabla-refacciones tbody tr').forEach(fila => {
         const c = fila.querySelector('.canti').value;
@@ -224,6 +275,7 @@ async function procesarCotizacion(generarPDF = false) {
             folio, fecha, vin, modelo, tipoCotizacion: tipo, refacciones: refaccionesParaDB,
             totales: { subtotal, iva, total }, timestamp: serverTimestamp()
         });
+        
         cotizacionGuardadaEnNube = true;
 
         if(generarPDF) {
@@ -242,7 +294,18 @@ async function procesarCotizacion(generarPDF = false) {
             doc.text("IVA (16%):", 140, finalY + 6); doc.text(document.getElementById('lbl-iva').innerText, 175, finalY + 6);
             doc.setFontSize(12); doc.setTextColor(0, 44, 95);
             doc.text("Total:", 140, finalY + 14); doc.text(document.getElementById('lbl-total').innerText, 175, finalY + 14);
-            doc.setFontSize(8); doc.setTextColor(100, 100, 100); doc.text("NO SE ACEPTAN CAMBIOS Y DEVOLUCIONES UNA VEZ ENTREGADAS LAS REFACCIONES.", 14, finalY + 30);
+            
+            // Textos legales para blindar la cotización en el PDF
+            doc.setFontSize(8); 
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("helvetica", "bold");
+            doc.text("TÉRMINOS Y CONDICIONES IMPORTANTES:", 14, finalY + 30);
+            doc.setFont("helvetica", "normal");
+            doc.text("1. NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES UNA VEZ ENTREGADAS LAS REFACCIONES. PIEZAS ELÉCTRICAS NO TIENEN GARANTÍA.", 14, finalY + 35);
+            doc.text("2. Precios expresados en Moneda Nacional (MXN) sin I.V.A. Precios y existencias sujetos a cambio sin previo aviso.", 14, finalY + 40);
+            doc.text("3. La presente cotización tiene una vigencia de 5 días hábiles.", 14, finalY + 45);
+            doc.text("4. Los tiempos de entrega para piezas en BACKORDER dependen de la logística del fabricante e importación.", 14, finalY + 50);
+            
             doc.save(`${folio}_${vin}.pdf`);
         }
 
@@ -250,6 +313,7 @@ async function procesarCotizacion(generarPDF = false) {
         return true;
     } catch (e) {
         Swal.fire('Error', 'No se pudo guardar.', 'error');
+        console.error(e);
         return false;
     }
 }
@@ -264,7 +328,7 @@ document.getElementById('btn-nueva-cotizacion').addEventListener('click', async 
     location.reload();
 });
 
-// ==== BÚSQUEDA Y ÚLTIMAS COTIZACIONES ====
+// ================= BÚSQUEDA Y TARJETAS =================
 function armarTarjeta(data) {
     const totalFmt = '$' + data.totales.total.toLocaleString('es-MX', {minimumFractionDigits: 2});
     let listaPiezas = `<ul class="lista-piezas">`;
@@ -274,9 +338,19 @@ function armarTarjeta(data) {
     listaPiezas += `</ul>`;
 
     const card = document.createElement('div');
-    card.className = 'history-card';
+    card.className = 'history-card toast-cursor'; 
+    card.style = 'transition: 0.3s;';
+    card.onmouseover = () => card.style.boxShadow = '0 5px 15px rgba(0,170,210,0.3)';
+    card.onmouseout = () => card.style.boxShadow = 'none';
+    
+    card.onclick = () => recrearCotizacion(data);
+
     card.innerHTML = `
-        <h4>Folio: ${data.folio} <span style="float:right; font-size:14px; color:#666;">${data.fecha}</span></h4>
+        <div style="display:flex; justify-content:space-between;">
+            <h4 style="margin:0;">Folio: ${data.folio}</h4>
+            <span style="font-size:12px; font-weight:bold; color:var(--hyundai-light-blue);">🔄 CLIC PARA RECREAR</span>
+        </div>
+        <p style="font-size:12px; color:#666; margin-bottom:10px;">${data.fecha}</p>
         <p><strong>VIN:</strong> ${data.vin || 'N/A'}</p>
         <p><strong>Modelo:</strong> ${data.modelo || 'N/A'}</p>
         <p><strong>Total Cotizado:</strong> ${totalFmt}</p>
