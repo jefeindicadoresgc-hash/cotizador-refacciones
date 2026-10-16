@@ -10,8 +10,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Lector de Excel compatible con XLSX y XLS -->
+    <!-- Lector de Excel crudo (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- NUEVO: Generador de Excel con Diseño y Colores (ExcelJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
 
@@ -27,6 +29,7 @@
                 <button class="menu-btn" id="btn-nav-historial">Buscar por VIN</button>
                 <button class="menu-btn" id="btn-nav-inventario" style="color:var(--success); font-weight:bold;">📋 Inventario Diario</button>
                 <button class="menu-btn" id="btn-nav-almacen">📦 Almacén y Obsoletos</button>
+                <button class="menu-btn" id="btn-nav-pedido" style="color:#00AAD2; font-weight:bold;">📊 Cálculo de Pedido</button>
             </nav>
             <div class="candado-status" id="candado-status">
                 🔒 Candado VIN Activo
@@ -231,16 +234,50 @@
                 </div>
             </section>
 
+            <!-- SECCIÓN 5: CÁLCULO DE PEDIDO DE STOCK -->
+            <section id="sec-pedido" class="card" style="display: none;">
+                <h2 class="card-title" style="color:#00AAD2;">📊 Cálculo de Pedido de Stock (1.5 Meses)</h2>
+                <p class="subtitle">Sube el "rptestadistico.xls" para calcular automáticamente qué piezas pedir basado en la venta de los últimos 6 meses.</p>
+                
+                <div style="margin-top:20px; padding:30px; border: 2px dashed #00AAD2; text-align:center; border-radius:8px; background: #fafafa;">
+                    <input type="file" id="excel-pedido" accept=".xlsx, .xls, .csv" style="display:none;" onchange="window.procesarReporteEstadistico(event)">
+                    <button class="btn-primary" style="background-color: #00AAD2; width:auto;" onclick="document.getElementById('excel-pedido').click()">📂 Subir "rptestadistico.xls"</button>
+                </div>
+
+                <div style="margin-top:20px; display:flex; justify-content: space-between; align-items:center;">
+                    <h3 style="color:#00AAD2;">📋 Sugerencia de Pedido Calculada</h3>
+                    <button class="btn-primary" style="background-color: var(--success); width:auto;" onclick="window.exportarPedidoExcel()">💾 Descargar Excel de Pedido</button>
+                </div>
+
+                <div style="margin-top:20px; max-height: 400px; overflow-y: auto; border: 1px solid #eee;">
+                    <table id="tabla-pedidos-db" style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th style="background:#00AAD2; color:white; padding:10px; text-align: left;">No. Parte</th>
+                                <th style="background:#00AAD2; color:white; padding:10px; text-align: left;">Descripción</th>
+                                <th style="background:#00AAD2; color:white; padding:10px; text-align: center;">Disp.</th>
+                                <th style="background:#00AAD2; color:white; padding:10px; text-align: center;">Hits (Meses)</th>
+                                <th style="background:#00AAD2; color:white; padding:10px; text-align: center;">Prom. 6M</th>
+                                <th style="background:#00AAD2; color:white; padding:10px; text-align: center;">A Pedir</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
         </main>
     </div>
 
-    <!-- Scripts Modulares -->
+    <!-- Scripts Modulares (El orden no importa al ser módulos) -->
     <script type="module" src="./firebase-config.js"></script>
     <script type="module" src="./whatsapp.js"></script>
     <script type="module" src="./inventario.js"></script>
     <script type="module" src="./sobrantes.js"></script>
     <script type="module" src="./obsoletos.js"></script>
     <script type="module" src="./recrear.js"></script>
+    <script type="module" src="./pedido.js"></script>
+    <script type="module" src="./cotizador.js"></script>
     <script type="module" src="./app.js"></script>
 </body>
 </html>
