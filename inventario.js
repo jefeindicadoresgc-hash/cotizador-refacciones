@@ -1,5 +1,5 @@
 import { db } from "./firebase-config.js";
-import { doc, setDoc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 window.piezasInventario = []; 
 window.inventarioAlDia = false; 
@@ -59,7 +59,7 @@ window.procesarExcelInventario = function(event) {
             
             rows.forEach(row => {
                 // Validación para el nuevo formato "rptvaloracagen.xls"
-                // Columna A(0), B(1), D(3), F(5)
+                // Col A(0)=Código, B(1)=Desc, D(3)=Precio, E(4)=Costo, F(5)=Disp
                 if(row.length >= 6 && row[0]) {
                     const numParte = row[0].toString().trim();
                     const desc = row[1] ? row[1].toString().trim() : 'SIN DESCRIPCIÓN';
@@ -70,8 +70,9 @@ window.procesarExcelInventario = function(event) {
                     inventarioArray.push({
                         serie: numParte,
                         descripcion: desc,
-                        precio: parseFloat(row[3]) || 0,     // Columna D (Índice 3) -> Precio Lista
-                        disponible: parseFloat(row[5]) || 0  // Columna F (Índice 5) -> Existencia
+                        precio: parseFloat(row[3]) || 0,        // Col D: Precio Lista
+                        costoPromedio: parseFloat(row[4]) || 0, // Col E: Costo (Para el KPI)
+                        disponible: parseFloat(row[5]) || 0     // Col F: Existencia
                     });
                 }
             });
@@ -136,11 +137,12 @@ function renderTablaInventario() {
             <td style="font-weight:bold; border-bottom: 1px solid #ddd; padding: 8px;">${p.serie}</td>
             <td style="border-bottom: 1px solid #ddd; padding: 8px;">${p.descripcion}</td>
             <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${p.precio.toFixed(2)}</td>
-            <td style="border-bottom: 1px solid #ddd; padding: 8px;">${p.disponible}</td>
+            <td style="border-bottom: 1px solid #ddd; padding: 8px; color: #888;">$${p.costoPromedio.toFixed(2)}</td>
+            <td style="border-bottom: 1px solid #ddd; padding: 8px; font-weight:bold;">${p.disponible}</td>
         </tr>`;
     });
 
     if(window.piezasInventario.length > 300) {
-        tbody.innerHTML += `<tr><td colspan="4" style="text-align:center; padding:10px; color:#666;">Mostrando 300 de ${window.piezasInventario.length} registros (El resto está oculto por rendimiento)...</td></tr>`;
+        tbody.innerHTML += `<tr><td colspan="5" style="text-align:center; padding:10px; color:#666;">Mostrando 300 de ${window.piezasInventario.length} registros (El resto está oculto por rendimiento)...</td></tr>`;
     }
 }

@@ -4,19 +4,32 @@ import { cargarSobrantesDesdeDB } from "./sobrantes.js";
 import { cargarInventarioDesdeDB } from "./inventario.js";
 import { cargarObsoletosDesdeDB } from "./obsoletos.js";
 import { recrearCotizacion } from "./recrear.js";
+import { cargarKPIs } from "./kpi.js"; // <-- NUEVO: Importación del Dashboard KPI
 
 window.onload = async () => {
-    window.generarFolioYFecha();
-    window.agregarFila(); 
+    // Estas funciones ahora viven en cotizador.js, las llamamos globalmente
+    if(window.generarFolioYFecha) window.generarFolioYFecha();
+    if(window.agregarFila) window.agregarFila(); 
     
-    await Promise.all([ cargarSobrantesDesdeDB(), cargarInventarioDesdeDB(), cargarObsoletosDesdeDB() ]);
+    // Cargar todas las bases de datos en segundo plano al abrir el sistema
+    await Promise.all([ 
+        cargarSobrantesDesdeDB(), 
+        cargarInventarioDesdeDB(), 
+        cargarObsoletosDesdeDB() 
+    ]);
     
+    // Configurar botones del menú lateral
     document.getElementById('btn-nav-nueva').onclick = () => window.cambiarVista('nueva');
     document.getElementById('btn-nav-historial').onclick = () => window.cambiarVista('buscador');
     document.getElementById('btn-nav-inventario').onclick = () => window.cambiarVista('inventario');
     document.getElementById('btn-nav-almacen').onclick = () => window.cambiarVista('sobrantes');
     document.getElementById('btn-nav-pedido').onclick = () => window.cambiarVista('pedido');
+    document.getElementById('btn-nav-kpi').onclick = () => window.cambiarVista('kpi'); // <-- NUEVO
 
+    // Hacer global la función para que el botón "Actualizar Datos" funcione
+    window.cargarModuloKPIs = cargarKPIs;
+
+    // ALERTA 7 DÍAS (OBSOLETOS)
     if(window.alertaObsoletos7Dias) {
         Swal.fire({
             toast: true, position: 'bottom-end', icon: 'warning', 
@@ -25,6 +38,7 @@ window.onload = async () => {
         });
     }
 
+    // CANDADO DIARIO (INVENTARIO)
     if(!window.inventarioAlDia) {
         Swal.fire({
             icon: 'warning', title: 'Inventario Desactualizado',
@@ -35,9 +49,11 @@ window.onload = async () => {
 };
 
 window.cambiarVista = function(vista) {
+    // Limpiar estilos y ocultar todas las pantallas
     document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.card').forEach(sec => sec.style.display = 'none');
     
+    // Rutas
     if(vista === 'nueva') {
         if(!window.inventarioAlDia) {
             Swal.fire('Atención', 'Sube el inventario diario antes de cotizar.', 'error');
@@ -60,10 +76,14 @@ window.cambiarVista = function(vista) {
     } else if(vista === 'pedido') {
         document.getElementById('btn-nav-pedido').classList.add('active');
         document.getElementById('sec-pedido').style.display = 'block';
+    } else if(vista === 'kpi') { // <-- NUEVO RUTEO
+        document.getElementById('btn-nav-kpi').classList.add('active');
+        document.getElementById('sec-kpi').style.display = 'block';
+        window.cargarModuloKPIs(); // Carga los cálculos y la gráfica automáticamente
     }
 }
 
-// ==== HISTORIAL DE COTIZACIONES ====
+// ================= HISTORIAL DE COTIZACIONES =================
 window.armarTarjeta = function(data) {
     const totalFmt = '$' + data.totales.total.toLocaleString('es-MX', {minimumFractionDigits: 2});
     let listaPiezas = `<ul class="lista-piezas">`;
@@ -77,15 +97,23 @@ window.armarTarjeta = function(data) {
     card.style = 'transition: 0.3s;';
     card.onmouseover = () => card.style.boxShadow = '0 5px 15px rgba(0,170,210,0.3)';
     card.onmouseout = () => card.style.boxShadow = 'none';
+    
+    // Clic para Recrear
     card.onclick = () => recrearCotizacion(data);
 
     card.innerHTML = `
-        <div style="display:flex; justify-content:space-between;"><h4 style="margin:0;">Folio: ${data.folio}</h4><span style="font-size:12px; font-weight:bold; color:var(--hyundai-light-blue);">🔄 CLIC PARA RECREAR</span></div>
+        <div style="display:flex; justify-content:space-between;">
+            <h4 style="margin:0;">Folio: ${data.folio}</h4>
+            <span style="font-size:12px; font-weight:bold; color:var(--hyundai-light-blue);">🔄 CLIC PARA RECREAR</span>
+        </div>
         <p style="font-size:12px; color:#666; margin-bottom:10px;">${data.fecha}</p>
         <p><strong>VIN:</strong> ${data.vin || 'N/A'}</p>
         <p><strong>Modelo:</strong> ${data.modelo || 'N/A'}</p>
         <p><strong>Total Cotizado:</strong> ${totalFmt}</p>
-        <div style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;"><p style="font-size:12px; font-weight:bold; color:var(--hyundai-blue);">PIEZAS COTIZADAS:</p>${listaPiezas}</div>
+        <div style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
+            <p style="font-size:12px; font-weight:bold; color:var(--hyundai-blue);">PIEZAS COTIZADAS:</p>
+            ${listaPiezas}
+        </div>
     `;
     return card;
 }
