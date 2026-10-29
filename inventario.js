@@ -3,7 +3,7 @@ import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/f
 
 window.piezasInventario = [];
 window.inventarioAlDia = false;
-window.fechaUltimoInventario = "Nunca";
+window.fechaUltimoInventario = "Nunca"; 
 window.ubicacionesAlmacen = {};
 
 export async function cargarInventarioDesdeDB() {
@@ -12,7 +12,6 @@ export async function cargarInventarioDesdeDB() {
         if (ubiDoc.exists()) {
             const rawUbi = ubiDoc.data().datos || {};
             window.ubicacionesAlmacen = {};
-            // MIGRACIÓN INTELIGENTE: Convierte todo a versión "limpia" para evitar problemas de guiones
             for (let key in rawUbi) {
                 const cleanKey = key.replace(/[^A-Z0-9]/ig, '').toUpperCase();
                 window.ubicacionesAlmacen[cleanKey] = rawUbi[key];
@@ -27,12 +26,12 @@ export async function cargarInventarioDesdeDB() {
             window.fechaUltimoInventario = dataMeta.fechaActualizacion || "Nunca";
             const fechaHoy = new Date().toLocaleDateString('es-MX');
             const lblFecha = document.getElementById('fecha-ultima-carga-lbl');
+            const menu = document.getElementById('main-menu');
 
             if (dataMeta.fechaActualizacion === fechaHoy) {
                 window.inventarioAlDia = true;
-                const menu = document.getElementById('main-menu');
-                if (menu) menu.classList.remove('menu-bloqueado');
-
+                if(menu) menu.classList.remove('menu-bloqueado'); 
+                
                 if (lblFecha) {
                     lblFecha.innerText = `Última vez que se subió: HOY (${window.fechaUltimoInventario})`;
                     lblFecha.style.color = '#008A4B';
@@ -40,9 +39,8 @@ export async function cargarInventarioDesdeDB() {
                     lblFecha.parentElement.style.borderColor = '#008A4B';
                 }
             } else {
-                window.inventarioAlDia = false;
-                const menu = document.getElementById('main-menu');
-                if (menu) menu.classList.add('menu-bloqueado');
+                window.inventarioAlDia = false; 
+                if(menu) menu.classList.add('menu-bloqueado'); 
 
                 if (lblFecha) {
                     lblFecha.innerText = `Última vez que se subió: ${window.fechaUltimoInventario} (Desactualizado)`;
@@ -59,7 +57,7 @@ export async function cargarInventarioDesdeDB() {
             }
 
             window.piezasInventario.forEach(p => p.cleanSerie = p.serie.replace(/[^A-Z0-9]/ig, '').toUpperCase());
-            renderTablaInventario();
+            if(window.renderTablaInventario) window.renderTablaInventario();
         }
     } catch (e) {
         console.error("Error al cargar inventario:", e);
@@ -113,8 +111,8 @@ window.procesarExcelInventario = function (event) {
             window.inventarioAlDia = true;
             window.fechaUltimoInventario = fechaHoy;
             const menu = document.getElementById('main-menu');
-            if (menu) menu.classList.remove('menu-bloqueado');
-
+            if(menu) menu.classList.remove('menu-bloqueado');
+            
             const lblFecha = document.getElementById('fecha-ultima-carga-lbl');
             if (lblFecha) {
                 lblFecha.innerText = `Última vez que se subió: HOY (${fechaHoy})`;
@@ -123,30 +121,34 @@ window.procesarExcelInventario = function (event) {
                 lblFecha.parentElement.style.borderColor = '#008A4B';
             }
 
-            renderTablaInventario();
+            if(window.renderTablaInventario) window.renderTablaInventario();
             Swal.fire('¡Éxito!', `Inventario actualizado de hoy.\nCandado Desbloqueado.`, 'success');
-            document.getElementById('upload-status-inv').innerText = `✅ Actualizado hoy (${inventarioArray.length} pz).`;
+            
+            const uploadStatus = document.getElementById('upload-status-inv');
+            if(uploadStatus) uploadStatus.innerText = `✅ Actualizado hoy (${inventarioArray.length} pz).`;
+            
             event.target.value = '';
 
-            if (document.getElementById('candado-status').innerText.includes('Candado') && document.getElementById('vin').value.length === 17) {
-                document.getElementById('vin').dispatchEvent(new Event('input'));
+            const candadoStatus = document.getElementById('candado-status');
+            const vinInput = document.getElementById('vin');
+            if (candadoStatus && candadoStatus.innerText.includes('Candado') && vinInput && vinInput.value.length === 17) {
+                vinInput.dispatchEvent(new Event('input'));
             }
         } catch (error) { Swal.fire('Error', 'Fallo al procesar el Excel.', 'error'); event.target.value = ''; }
     };
     reader.readAsArrayBuffer(file);
 }
 
-function renderTablaInventario() {
+// === EXPORTACIÓN GLOBAL PARA PERMITIR REPINTADO ===
+window.renderTablaInventario = function() {
     const tbody = document.querySelector('#tabla-inventario-db tbody');
-    if (!tbody) return;
+    if (!tbody) return; // Si la tabla aún no existe, no hace nada y espera.
     tbody.innerHTML = '';
 
     const piezasMostrar = window.piezasInventario.slice(0, 300);
 
     piezasMostrar.forEach(p => {
-        // ENLACE LIMPIO: Usa p.cleanSerie
         const infoUbi = window.ubicacionesAlmacen[p.cleanSerie] || { ubicacionStr: 'Sin Asignar', fecha: 'Nunca' };
-
         const textoMostrar = infoUbi.ubicacionStr || infoUbi.ubicacion || 'Sin Asignar';
 
         tbody.innerHTML += `<tr>

@@ -1,0 +1,101 @@
+<section id="sec-acme" class="acme-theme">
+    <img src="GIF1.gif" class="floating-gif gif-1" alt="Coyote">
+    <img src="GIF2.gif" class="floating-gif gif-2" alt="Coyote">
+    <img src="GIF3.gif" class="floating-gif gif-3" alt="Coyote">
+    <img src="GIF4.gif" class="floating-gif gif-4" alt="Coyote">
+    <img src="GIF5.gif" class="floating-gif gif-5" alt="Coyote">
+    <img src="GIF6.gif" class="floating-gif gif-6" alt="Coyote">
+
+    <div class="acme-header">
+        <div>
+            <h1>Ventas y Compras (Planta)</h1>
+            <div style="color: #aaa; font-style: italic; font-size: 12px;">Powered by Wile E. Coyote (ACME Corp)</div>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center; z-index: 10;">
+            <input type="month" id="acme-month" class="val-box" style="width: auto; padding: 6px;">
+            <button id="btn-acme-load" class="acme-btn">⬇️ Cargar</button>
+            <button id="btn-acme-save" class="acme-btn">💾 Guardar Nube</button>
+        </div>
+    </div>
+
+    <div class="acme-grid">
+        <!-- PANEL VENTAS -->
+        <div class="acme-panel">
+            <h2>Ventas Refacciones (Sin IVA)</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="file-upload-group" style="flex: 1; background: #222; padding: 10px; border-radius: 5px;">
+                    <label style="color:#43C6DB">1. Reporte Mostrador:</label><br>
+                    <input type="file" id="acme-file-mostrador" accept=".xls,.xlsx">
+                </div>
+                <div class="file-upload-group" style="flex: 1; background: #222; padding: 10px; border-radius: 5px;">
+                    <label style="color:#43C6DB">2. Reporte Taller:</label><br>
+                    <input type="file" id="acme-file-taller" accept=".xls,.xlsx">
+                </div>
+            </div>
+
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Leyenda</th>
+                        <th>Mostrador</th>
+                        <th>Taller</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="label">Objetivo</td>
+                        <td><input type="text" id="obj-mostrador" class="val-box" value="0"></td>
+                        <td><input type="text" id="obj-taller" class="val-box" value="0"></td>
+                        <td id="obj-total">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Venta</td>
+                        <td><div class="val-box" id="ven-mostrador">0.00</div></td>
+                        <td><div class="val-box" id="ven-taller">0.00</div></td>
+                        <td id="ven-total">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Costo</td>
+                        <td><div class="val-box" id="cos-mostrador">0.00</div></td>
+                        <td><div class="val-box" id="cos-taller">0.00</div></td>
+                        <td id="cos-total">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Utilidad</td>
+                        <td id="uti-mostrador">$0.00</td>
+                        <td id="uti-taller">$0.00</td>
+                        <td id="uti-total">$0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="alcance">ALCANCE TOTAL: <span id="alcance-total">0%</span></div>
+        </div>
+
+        <!-- PANEL COMPRAS -->
+        <div class="acme-panel">
+            <h2>Compras VS Objetivos</h2>
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; color: #43C6DB;">Líneas</th>
+                        <th style="color: #43C6DB;">Objetivo</th>
+                        <th style="color: #43C6DB;">Compras</th>
+                        <th style="color: #43C6DB;">Alcance</th>
+                        <th style="color: #43C6DB;">Diferencia</th>
+                    </tr>
+                </thead>
+                <tbody id="compras-tbody"></tbody>
+                <tfoot>
+                    <tr style="background-color: #D34324; color: white;">
+                        <td style="padding: 10px; border-radius: 5px 0 0 5px;">TOTALES</td>
+                        <td id="comp-obj-total" style="padding: 10px;">$0.00</td>
+                        <td id="comp-real-total" style="padding: 10px;">$0.00</td>
+                        <td id="comp-alcance-total" style="padding: 10px;">0%</td>
+                        <td id="comp-dif-total" style="padding: 10px; border-radius: 0 5px 5px 0;">$0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</section>

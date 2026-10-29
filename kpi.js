@@ -7,7 +7,6 @@ export async function cargarKPIs() {
     try {
         Swal.fire({ title: 'Calculando Métricas...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-        // 1. Obtener todas las cotizaciones
         const q = query(collection(db, "cotizaciones"));
         const qs = await getDocs(q);
         
@@ -19,42 +18,36 @@ export async function cargarKPIs() {
 
         qs.forEach(doc => {
             const data = doc.data();
-            const fechaCot = data.fecha; // Formato DD/MM/YYYY
+            const fechaCot = data.fecha;
 
-            // Conteo diario
             if (fechaCot === fechaHoy) totalCotizacionesHoy++;
-
-            // Conteo por fechas para gráfica
             fechasCount[fechaCot] = (fechasCount[fechaCot] || 0) + 1;
 
-            // Conteo de piezas más cotizadas
-            data.refacciones.forEach(ref => {
-                const np = ref.numeroParte;
-                piezasCotizadasCount[np] = (piezasCotizadasCount[np] || 0) + parseInt(ref.cantidad);
-            });
+            if(data.refacciones) {
+                data.refacciones.forEach(ref => {
+                    const np = ref.numeroParte;
+                    piezasCotizadasCount[np] = (piezasCotizadasCount[np] || 0) + parseInt(ref.cantidad);
+                });
+            }
         });
 
-        // Top Refacción
         let topPieza = "Ninguna";
         let maxCotizada = 0;
         for (const [pieza, cant] of Object.entries(piezasCotizadasCount)) {
             if (cant > maxCotizada) { maxCotizada = cant; topPieza = pieza; }
         }
 
-        // Fecha de más cotizaciones
         let topFecha = "N/A";
         let maxFecha = 0;
         for (const [fecha, cant] of Object.entries(fechasCount)) {
             if (cant > maxFecha) { maxFecha = cant; topFecha = fecha; }
         }
 
-        // 2. Cálculos de Inventario
         let valorTotalInventario = 0;
         let piezasUnicas = window.piezasInventario ? window.piezasInventario.length : 0;
         
         if (window.piezasInventario) {
             window.piezasInventario.forEach(p => {
-                // Costo * Disponibilidad
                 valorTotalInventario += (p.costoPromedio * p.disponible);
             });
         }
@@ -62,19 +55,29 @@ export async function cargarKPIs() {
         const totalSobrantes = window.piezasSobrantes ? window.piezasSobrantes.length : 0;
         const totalObsoletos = window.piezasObsoletas ? window.piezasObsoletas.length : 0;
 
-        // 3. Pintar en HTML
-        document.getElementById('kpi-coti-hoy').innerText = totalCotizacionesHoy;
-        document.getElementById('kpi-top-pieza').innerText = `${topPieza} (${maxCotizada} pz)`;
-        document.getElementById('kpi-top-fecha').innerText = `${topFecha} (${maxFecha} cots.)`;
+        // INYECCIÓN SEGURA (Previene errores si cambias de pestaña muy rápido)
+        const elCotiHoy = document.getElementById('kpi-coti-hoy');
+        if(elCotiHoy) elCotiHoy.innerText = totalCotizacionesHoy;
         
-        document.getElementById('kpi-valor-inv').innerText = '$' + valorTotalInventario.toLocaleString('es-MX', {minimumFractionDigits: 2});
-        document.getElementById('kpi-uni-inv').innerText = piezasUnicas.toLocaleString('es-MX');
-        document.getElementById('kpi-sobrantes').innerText = totalSobrantes;
-        document.getElementById('kpi-obsoletos').innerText = totalObsoletos;
+        const elTopPieza = document.getElementById('kpi-top-pieza');
+        if(elTopPieza) elTopPieza.innerText = `${topPieza} (${maxCotizada} pz)`;
+        
+        const elTopFecha = document.getElementById('kpi-top-fecha');
+        if(elTopFecha) elTopFecha.innerText = `${topFecha} (${maxFecha} cots.)`;
+        
+        const elValorInv = document.getElementById('kpi-valor-inv');
+        if(elValorInv) elValorInv.innerText = '$' + valorTotalInventario.toLocaleString('es-MX', {minimumFractionDigits: 2});
+        
+        const elUniInv = document.getElementById('kpi-uni-inv');
+        if(elUniInv) elUniInv.innerText = piezasUnicas.toLocaleString('es-MX');
+        
+        const elSobrantes = document.getElementById('kpi-sobrantes');
+        if(elSobrantes) elSobrantes.innerText = totalSobrantes;
+        
+        const elObsoletos = document.getElementById('kpi-obsoletos');
+        if(elObsoletos) elObsoletos.innerText = totalObsoletos;
 
-        // 4. Graficar Historial
         dibujarGrafica(fechasCount);
-
         Swal.close();
     } catch (e) {
         console.error(e);
@@ -83,13 +86,14 @@ export async function cargarKPIs() {
 }
 
 function dibujarGrafica(fechasCount) {
-    const ctx = document.getElementById('kpiChart').getContext('2d');
-    
-    // Ordenar fechas (simplificado)
+    const canvas = document.getElementById('kpiChart');
+    if(!canvas) return; // Blindaje: Si el canvas no existe, no intenta dibujar
+
+    const ctx = canvas.getContext('2d');
     const labels = Object.keys(fechasCount).sort();
     const data = labels.map(l => fechasCount[l]);
 
-    if (kpiChart) kpiChart.destroy(); // Destruir la anterior si existe
+    if (kpiChart) kpiChart.destroy(); 
 
     kpiChart = new Chart(ctx, {
         type: 'bar',

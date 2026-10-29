@@ -8,9 +8,8 @@ export async function cargarSobrantesDesdeDB() {
         const docSnap = await getDoc(doc(db, "configuracion", "almacen"));
         if (docSnap.exists()) {
             window.piezasSobrantes = docSnap.data().lista || [];
-            // Limpiar símbolos para búsquedas exactas
             window.piezasSobrantes.forEach(p => p.cleanSerie = p.serie.replace(/[^A-Z0-9]/ig, '').toUpperCase());
-            renderTablaSobrantes();
+            if(window.renderTablaSobrantes) window.renderTablaSobrantes();
         }
     } catch (e) {
         console.error("Error al cargar sobrantes:", e);
@@ -21,7 +20,8 @@ window.procesarExcelSobrantes = function(event) {
     const file = event.target.files[0];
     if(!file) return;
 
-    document.getElementById('upload-status').innerText = "⏳ Leyendo Excel...";
+    Swal.fire({ title: 'Cargando Sobrantes...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
     const reader = new FileReader();
     reader.onload = async (e) => {
         try {
@@ -42,24 +42,22 @@ window.procesarExcelSobrantes = function(event) {
                 };
             }).filter(item => item.serie !== '');
 
-            document.getElementById('upload-status').innerText = "☁️ Subiendo a la nube...";
             await setDoc(doc(db, "configuracion", "almacen"), { lista: sobrantesArray });
             
             window.piezasSobrantes = sobrantesArray;
             window.piezasSobrantes.forEach(p => p.cleanSerie = p.serie.replace(/[^A-Z0-9]/ig, '').toUpperCase());
-            renderTablaSobrantes();
             
+            if(window.renderTablaSobrantes) window.renderTablaSobrantes();
             Swal.fire('¡Éxito!', `Se guardaron ${sobrantesArray.length} piezas sobrantes.`, 'success');
-            document.getElementById('upload-status').innerText = `✅ ${sobrantesArray.length} piezas actualizadas.`;
         } catch (error) {
             Swal.fire('Error', 'Hubo un problema leyendo el archivo Excel.', 'error');
-            document.getElementById('upload-status').innerText = "❌ Error en archivo.";
         }
     };
     reader.readAsArrayBuffer(file);
 }
 
-function renderTablaSobrantes() {
+// === EXPORTACIÓN GLOBAL PARA PERMITIR REPINTADO ===
+window.renderTablaSobrantes = function() {
     const tbody = document.querySelector('#tabla-sobrantes-db tbody');
     if(!tbody) return;
     tbody.innerHTML = '';

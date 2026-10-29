@@ -1,0 +1,34 @@
+<section id="sec-inventario" class="card">
+    <h2 class="card-title" style="color:var(--success);">📋 Inventario y Gestión de Ubicaciones</h2>
+    <p class="subtitle">Obligatorio subir el reporte de inventario diario para habilitar el uso del sistema.</p>
+
+    <div id="panel-ultima-carga" style="background: #ffe6e6; border: 2px solid #E63312; border-radius: 8px; padding: 15px; margin-top: 15px; text-align: center;">
+        <p style="margin: 0; font-size: 18px; color: #E63312; font-weight: bold;" id="fecha-ultima-carga-lbl">Última vez que se subió: Verificando en la Nube...</p>
+    </div>
+
+    <div style="margin-top:20px; padding:30px; border: 2px dashed var(--success); text-align:center; border-radius:8px; background: #fafafa;">
+        <input type="file" id="excel-inventario" accept=".xlsx, .xls, .csv" style="display:none;" onchange="window.procesarExcelInventario(event)">
+        <button class="btn-primary" style="background-color: var(--success); width:auto;" onclick="document.getElementById('excel-inventario').click()">📂 Cargar Inventario de Hoy</button>
+        <p id="upload-status-inv" style="margin-top:10px; font-size:13px; color:#666; font-weight:bold;"></p>
+    </div>
+
+    <div style="margin-top:40px;">
+        <h3 style="color:var(--success); margin-bottom: 10px;">✅ Mapa de Inventario Físico</h3>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee;">
+            <table id="tabla-inventario-db" style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead style="position: sticky; top: 0; z-index: 1;">
+                    <tr>
+                        <th style="background:var(--success); color:white; padding:10px;">No. Parte</th>
+                        <th style="background:var(--success); color:white; padding:10px;">Descripción</th>
+                        <th style="background:var(--success); color:white; padding:10px;">Precio</th>
+                        <th style="background:var(--success); color:white; padding:10px;">Disp.</th>
+                        <th style="background:#005c32; color:white; padding:10px;">Ubicación Actual</th>
+                        <th style="background:#005c32; color:white; padding:10px;">Últ. Conteo</th>
+                        <th style="background:#005c32; color:white; padding:10px; width: 120px; text-align: center;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</section>

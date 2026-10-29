@@ -1,0 +1,18 @@
+<section id="sec-layout" class="card">
+    <h2 class="card-title" style="color:#6f42c1;">🗺️ Layout del Almacén</h2>
+    <p class="subtitle">Busca un número de parte para iluminar su zona correspondiente o haz clic en un anaquel para ver
+        su interior.</p>
+
+    <div class="input-group" style="max-width: 400px; margin-top: 20px; margin-bottom: 20px;">
+        <label>Buscar Pieza en Mapa</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="input-buscar-mapa" placeholder="Escribe el No. Parte..."
+                style="text-transform: uppercase;">
+            <button class="btn-primary" style="background-color: #6f42c1; border-color: #6f42c1;"
+                onclick="window.buscarEnMapaGeneral()">Localizar</button>
+        </div>
+    </div>
+
+    <!-- AQUÍ ES DONDE EL LAYOUT.JS INYECTARÁ TODA LA MAGIA DEL MAPA -->
+    <div id="mapas-general-container"></div>
+</section>

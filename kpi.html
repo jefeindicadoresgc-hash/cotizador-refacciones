@@ -1,0 +1,24 @@
+<section id="sec-kpi" class="card">
+    <h2 class="card-title" style="color:#FF6900;">📈 Dashboard de Métricas</h2>
+    <div style="margin-top:20px; display:flex; justify-content: flex-end; margin-bottom: 20px;">
+        <button class="btn-primary" style="background-color: #FF6900; width:auto;" onclick="window.cargarModuloKPIs()">🔄 Actualizar Datos</button>
+    </div>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card"><h4>Cotizaciones Hoy</h4><p id="kpi-coti-hoy">0</p></div>
+        <div class="kpi-card"><h4>Top Refacción</h4><p id="kpi-top-pieza" style="font-size:16px;">-</p></div>
+        <div class="kpi-card"><h4>Día Más Fuerte</h4><p id="kpi-top-fecha" style="font-size:16px;">-</p></div>
+    </div>
+    
+    <div class="kpi-grid">
+        <div class="kpi-card success"><h4>Valor Total Inventario</h4><p id="kpi-valor-inv">$0.00</p></div>
+        <div class="kpi-card success"><h4>Piezas Únicas Disp.</h4><p id="kpi-uni-inv">0</p></div>
+        <div class="kpi-card danger"><h4>Sobrantes (Carga)</h4><p id="kpi-sobrantes">0</p></div>
+        <div class="kpi-card warning"><h4>Obsoletos (Carga)</h4><p id="kpi-obsoletos">0</p></div>
+    </div>
+    
+    <div style="margin-top: 30px; height: 300px; border: 1px solid #eee; padding: 15px; border-radius: 8px;">
+        <h4 style="margin-top:0; color:#666;">Tendencia de Cotizaciones</h4>
+        <canvas id="kpiChart"></canvas>
+    </div>
+</section>

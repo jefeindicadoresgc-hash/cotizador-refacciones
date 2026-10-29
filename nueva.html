@@ -1,0 +1,71 @@
+<section id="sec-nueva" class="card">
+    <div class="header-cotizacion">
+        <div>
+            <h2 class="card-title">Generar Cotización</h2>
+            <p class="subtitle">CRUFER 2000 S. DE R.L. DE C.V.</p>
+        </div>
+        <div class="folio-box">
+            <span class="folio-label">FOLIO</span>
+            <span class="folio-number" id="folio-txt"></span>
+        </div>
+    </div>
+
+    <div class="form-grid">
+        <div class="input-group vin-group">
+            <label>Número de Serie (VIN) - OBLIGATORIO</label>
+            <input type="text" id="vin" maxlength="17" placeholder="INGRESA 17 DÍGITOS PARA DESBLOQUEAR..." style="text-transform: uppercase;">
+            <span class="vin-counter" id="vin-counter">0/17</span>
+        </div>
+        <div class="input-group"><label>Fecha</label><input type="text" id="fecha" readonly></div>
+        <div class="input-group disabled-until-vin"><label>Modelo del Vehículo</label><input type="text" id="modelo" placeholder="Ej. CRETA" style="text-transform: uppercase;" disabled></div>
+        <div class="input-group disabled-until-vin"><label>WhatsApp Cliente (Opcional)</label><input type="text" id="telefono-cliente" maxlength="10" placeholder="10 Dígitos..." oninput="this.value = this.value.replace(/[^0-9]/g, '')" disabled></div>
+        <div class="input-group disabled-until-vin">
+            <label>Tipo de Cotización</label>
+            <select id="tipo-cotizacion" disabled>
+                <option value="MOSTRADOR">MOSTRADOR</option>
+                <option value="COTIZACIÓN TELEFÓNICA">COT. TELEFÓNICA</option>
+                <option value="COTIZACIÓN TALLER">COT. TALLER</option>
+                <option value="GARANTIAS">GARANTÍAS</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container disabled-until-vin" id="area-refacciones">
+        <table id="tabla-refacciones">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">Cant.</th>
+                    <th style="width: 140px;">No. Parte</th>
+                    <th>Descripción</th>
+                    <th style="width: 140px; text-align: center;">Ubicación</th>
+                    <th style="width: 70px; text-align: center;">Disp.</th>
+                    <th style="width: 100px; text-align: right;">Precio Unit.</th>
+                    <th style="width: 100px; text-align: right;">Importe</th>
+                    <th style="width: 60px; text-align: center;">Acción</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button class="btn-secondary" id="btn-add-row" disabled onclick="window.agregarFila()">+ Agregar Refacción</button>
+    </div>
+
+    <div class="totales-wrapper disabled-until-vin">
+        <div class="notas">
+            <p><strong>TÉRMINOS Y CONDICIONES IMPORTANTES:</strong></p>
+            <p>1. NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES UNA VEZ ENTREGADAS. PIEZAS ELÉCTRICAS NO TIENEN GARANTÍA.</p>
+            <p>2. Precios en MXN (sin IVA). Precios y existencias sujetos a cambio sin previo aviso. Vigencia de 5 días hábiles.</p>
+            <p>3. Tiempos de entrega en Backorder sujetos a logística del fabricante.</p>
+        </div>
+        <div class="totales-box">
+            <div class="total-row"><span>Subtotal:</span> <span id="lbl-subtotal">$0.00</span></div>
+            <div class="total-row"><span>IVA (16%):</span> <span id="lbl-iva">$0.00</span></div>
+            <div class="total-row highlight"><span>Total:</span> <span id="lbl-total">$0.00</span></div>
+        </div>
+    </div>
+
+    <div class="actions-footer disabled-until-vin" style="display: flex; gap: 15px; justify-content: flex-end; margin-top:20px;">
+        <button class="btn-secondary" id="btn-nueva-cotizacion" disabled>🔄 Limpiar</button>
+        <button class="btn-whatsapp" id="btn-whatsapp" disabled onclick="window.enviarWhatsApp()">💬 Enviar por WhatsApp</button>
+        <button class="btn-primary" id="btn-generar-pdf" style="width: auto;" disabled>📄 Generar PDF y Guardar</button>
+    </div>
+</section>

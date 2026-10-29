@@ -12,7 +12,6 @@ export async function cargarObsoletosDesdeDB() {
             window.piezasObsoletas = data.lista || [];
             window.piezasObsoletas.forEach(p => p.cleanSerie = p.serie.replace(/[^A-Z0-9]/ig, '').toUpperCase());
 
-            // VERIFICAR REGLA DE LOS 7 DÍAS
             if (data.fechaActualizacionTS) {
                 const diasPasados = (Date.now() - data.fechaActualizacionTS) / (1000 * 60 * 60 * 24);
                 if (diasPasados > 7) window.alertaObsoletos7Dias = true;
@@ -20,7 +19,7 @@ export async function cargarObsoletosDesdeDB() {
                 window.alertaObsoletos7Dias = true;
             }
 
-            renderTablaObsoletos();
+            if(window.renderTablaObsoletos) window.renderTablaObsoletos();
         } else {
             window.alertaObsoletos7Dias = true;
         }
@@ -35,7 +34,7 @@ window.procesarExcelObsoletos = function(event) {
 
     Swal.fire({
         title: 'Cargando Obsoletos...',
-        html: 'Leyendo "urotacion2.xls" y guardando en la nube...',
+        html: 'Leyendo y guardando en la nube...',
         showConfirmButton: false, allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
@@ -51,24 +50,19 @@ window.procesarExcelObsoletos = function(event) {
             let obsoletosArray = [];
 
             rows.forEach(row => {
-                // Col A (Índice 0) = Número, Col J (Índice 9) = Clasificación
                 if (row.length >= 10 && row[0] && row[9]) {
                     const numParte = row[0].toString().trim();
                     const clasif = row[9].toString().trim().toUpperCase();
 
-                    // Buscar G3 o G4
                     if (clasif.includes('G3') || clasif.includes('G4')) {
-                        obsoletosArray.push({
-                            serie: numParte,
-                            clasificacion: clasif
-                        });
+                        obsoletosArray.push({ serie: numParte, clasificacion: clasif });
                     }
                 }
             });
 
             await setDoc(doc(db, "configuracion", "obsoletos"), {
                 lista: obsoletosArray,
-                fechaActualizacionTS: Date.now(), // Marca de tiempo para medir los 7 días
+                fechaActualizacionTS: Date.now(), 
                 fechaActualizacionStr: new Date().toLocaleDateString('es-MX')
             });
 
@@ -76,14 +70,12 @@ window.procesarExcelObsoletos = function(event) {
             window.piezasObsoletas.forEach(p => p.cleanSerie = p.serie.replace(/[^A-Z0-9]/ig, '').toUpperCase());
             window.alertaObsoletos7Dias = false;
             
-            renderTablaObsoletos();
+            if(window.renderTablaObsoletos) window.renderTablaObsoletos();
 
             Swal.fire('¡Éxito!', `Se registraron ${obsoletosArray.length} piezas como obsoletas (G3 y G4).`, 'success');
-            document.getElementById('upload-status-obs').innerText = `✅ Actualizado hoy (${obsoletosArray.length} pz).`;
             event.target.value = '';
 
         } catch (error) {
-            console.error(error);
             Swal.fire('Error', 'No se pudo leer el archivo Excel.', 'error');
             event.target.value = '';
         }
@@ -91,12 +83,13 @@ window.procesarExcelObsoletos = function(event) {
     reader.readAsArrayBuffer(file);
 }
 
-function renderTablaObsoletos() {
+// === EXPORTACIÓN GLOBAL PARA PERMITIR REPINTADO ===
+window.renderTablaObsoletos = function() {
     const tbody = document.querySelector('#tabla-obsoletos-db tbody');
     if(!tbody) return;
     tbody.innerHTML = '';
     
-    const mostrar = window.piezasObsoletas.slice(0, 100); // Mostramos max 100 para no trabar
+    const mostrar = window.piezasObsoletas.slice(0, 100); 
     mostrar.forEach(p => {
         tbody.innerHTML += `<tr>
             <td style="font-weight:bold; border-bottom:1px solid #ddd; padding:8px;">${p.serie}</td>

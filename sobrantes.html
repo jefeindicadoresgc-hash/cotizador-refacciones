@@ -1,0 +1,45 @@
+<section id="sec-sobrantes" class="card">
+    <h2 class="card-title" style="color:var(--hyundai-blue);">📦 Almacén de Piezas Sobrantes y Obsoletas</h2>
+    <div style="display: flex; gap: 20px; margin-top: 20px;">
+        <div style="flex: 1; padding: 20px; border: 2px dashed var(--danger); border-radius: 8px; text-align: center; background: #fafafa;">
+            <h3 style="color:var(--danger); margin-bottom:10px;">🚨 Piezas Sobrantes</h3>
+            <input type="file" id="excel-sobrantes" accept=".xlsx, .xls, .csv" style="display:none;" onchange="window.procesarExcelSobrantes(event)">
+            <button class="btn-primary" style="background-color: var(--danger); width:auto;" onclick="document.getElementById('excel-sobrantes').click()">📂 Subir Sobrantes</button>
+        </div>
+        <div style="flex: 1; padding: 20px; border: 2px dashed #FF8C00; border-radius: 8px; text-align: center; background: #fafafa;">
+            <h3 style="color:#FF8C00; margin-bottom:10px;">⚠️ Piezas Obsoletas</h3>
+            <input type="file" id="excel-obsoletos" accept=".xlsx, .xls, .csv" style="display:none;" onchange="window.procesarExcelObsoletos(event)">
+            <button class="btn-primary" style="background-color: #FF8C00; width:auto; border-color:#FF8C00;" onclick="document.getElementById('excel-obsoletos').click()">📂 Subir Obsoletos</button>
+        </div>
+    </div>
+    <div style="display: flex; gap: 20px; margin-top: 40px;">
+        <div style="flex: 1;">
+            <h3 style="color:var(--danger); margin-bottom: 10px; font-size: 14px;">🚨 Últimos Sobrantes</h3>
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid #eee;">
+                <table id="tabla-sobrantes-db" style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th style="background:var(--danger); color:white; padding:8px;">Serie</th>
+                            <th style="background:var(--danger); color:white; padding:8px;">Clasif/Desc</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div style="flex: 1;">
+            <h3 style="color:#FF8C00; margin-bottom: 10px; font-size: 14px;">⚠️ Últimos Obsoletos (G3/G4)</h3>
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid #eee;">
+                <table id="tabla-obsoletos-db" style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th style="background:#FF8C00; color:white; padding:8px;">Serie</th>
+                            <th style="background:#FF8C00; color:white; padding:8px;">Clasificación</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

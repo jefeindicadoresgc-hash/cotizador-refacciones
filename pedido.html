@@ -1,0 +1,26 @@
+<section id="sec-pedido" class="card">
+    <h2 class="card-title" style="color:#00AAD2;">📊 Cálculo de Pedido de Stock (1.5 Meses)</h2>
+    <div style="margin-top:20px; padding:30px; border: 2px dashed #00AAD2; text-align:center; border-radius:8px; background: #fafafa;">
+        <input type="file" id="excel-pedido" accept=".xlsx, .xls, .csv" style="display:none;" onchange="window.procesarReporteEstadistico(event)">
+        <button class="btn-primary" style="background-color: #00AAD2; width:auto;" onclick="document.getElementById('excel-pedido').click()">📂 Subir "rptestadistico.xls"</button>
+    </div>
+    <div style="margin-top:20px; display:flex; justify-content: space-between; align-items:center;">
+        <h3 style="color:#00AAD2;">📋 Sugerencia de Pedido Calculada</h3>
+        <button class="btn-primary" style="background-color: var(--success); width:auto;" onclick="window.exportarPedidoExcel()">💾 Descargar Excel de Pedido</button>
+    </div>
+    <div style="margin-top:20px; max-height: 400px; overflow-y: auto; border: 1px solid #eee;">
+        <table id="tabla-pedidos-db" style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th style="background:#00AAD2; color:white; padding:10px;">No. Parte</th>
+                    <th style="background:#00AAD2; color:white; padding:10px;">Descripción</th>
+                    <th style="background:#00AAD2; color:white; padding:10px;">Disp.</th>
+                    <th style="background:#00AAD2; color:white; padding:10px;">Hits (Meses)</th>
+                    <th style="background:#00AAD2; color:white; padding:10px;">Prom. 6M</th>
+                    <th style="background:#00AAD2; color:white; padding:10px;">A Pedir</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</section>
