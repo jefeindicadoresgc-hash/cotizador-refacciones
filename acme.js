@@ -25,7 +25,6 @@ const formatInputWithCommas = (e) => {
         e.target.value = parts.join('.');
     }
     
-    // Solo actualiza la UI si los elementos de ACME están en pantalla
     if (document.getElementById('comp-obj-total')) {
         if(e.target.id && e.target.id.includes("comp-")) updateComprasUI();
         else updateSalesUI();
@@ -34,27 +33,37 @@ const formatInputWithCommas = (e) => {
 
 const lineasCompras = ['MOBIS', 'SEMI-SINTETICO', 'SINTETICO', 'WURTH', 'LLANTAS', 'ACCESORIOS'];
 
-// INICIALIZADOR (Se llama desde app.js cuando la vista acme.html ya se pegó en el DOM)
+// INICIALIZADOR: Ahora pone el mes actual y simula un click para cargar por default
 window.inicializarAcme = function() {
     const today = new Date();
     const acmeMonth = document.getElementById('acme-month');
-    if(acmeMonth) acmeMonth.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    
+    if(acmeMonth) {
+        acmeMonth.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    }
+    
     initComprasTable();
+    
+    // Auto-Carga de la base de datos al abrir el módulo
+    setTimeout(() => {
+        const btnLoad = document.getElementById('btn-acme-load');
+        if (btnLoad) btnLoad.click();
+    }, 300);
 };
 
 function initComprasTable() {
     const tbody = document.getElementById('compras-tbody');
-    if(!tbody) return; // Si no existe, aborta seguro
+    if(!tbody) return; 
     tbody.innerHTML = '';
     
     lineasCompras.forEach(linea => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td style="font-weight: bold; color: white; text-align:left;">${linea}</td>
-            <td><input type="text" id="comp-obj-${linea}" class="val-box" value="0"></td>
-            <td><input type="text" id="comp-real-${linea}" class="val-box" value="0"></td>
-            <td id="comp-alcance-${linea}" style="font-weight: bold; color:white;">0%</td>
-            <td id="comp-dif-${linea}" style="font-weight: bold; color:white;">$0.00</td>
+            <td style="font-weight: 800; color: var(--text-muted); text-align:left;">${linea}</td>
+            <td><input type="text" id="comp-obj-${linea}" style="text-align:center;" value="0"></td>
+            <td><input type="text" id="comp-real-${linea}" style="text-align:center;" value="0"></td>
+            <td id="comp-alcance-${linea}" style="font-weight: bold; text-align:center;">0%</td>
+            <td id="comp-dif-${linea}" style="font-weight: bold; text-align:right;">$0.00</td>
         `;
         tbody.appendChild(tr);
     });
@@ -65,7 +74,7 @@ function updateComprasUI() {
     lineasCompras.forEach(linea => {
         const objEl = document.getElementById(`comp-obj-${linea}`);
         const realEl = document.getElementById(`comp-real-${linea}`);
-        if(!objEl || !realEl) return; // Validación segura
+        if(!objEl || !realEl) return; 
 
         const obj = parseNum(objEl.value);
         const real = parseNum(realEl.value);
@@ -73,8 +82,8 @@ function updateComprasUI() {
 
         const dif = real - obj;
         const alcance = obj > 0 ? Math.round((real / obj) * 100) : 0;
-        const difColor = dif < 0 ? '#D34324' : '#4CAF50';
-        const alcanceColor = alcance < 100 ? '#D34324' : '#4CAF50';
+        const difColor = dif < 0 ? 'var(--danger)' : 'var(--success)';
+        const alcanceColor = alcance < 100 ? 'var(--danger)' : 'var(--success)';
 
         const difEl = document.getElementById(`comp-dif-${linea}`);
         const alcEl = document.getElementById(`comp-alcance-${linea}`);
@@ -120,7 +129,6 @@ const processVentasExcel = (file, tipo) => {
     reader.readAsArrayBuffer(file);
 };
 
-// Delegación global protegida
 document.addEventListener('change', (e) => {
     if(e.target && e.target.id === 'acme-file-mostrador') processVentasExcel(e.target.files[0], 'mostrador');
     if(e.target && e.target.id === 'acme-file-taller') processVentasExcel(e.target.files[0], 'taller');
@@ -134,7 +142,7 @@ document.addEventListener('input', (e) => {
 
 function updateSalesUI() {
     const objMostradorEl = document.getElementById('obj-mostrador');
-    if(!objMostradorEl) return; // Validación segura
+    if(!objMostradorEl) return; 
     
     const objMostrador = parseNum(objMostradorEl.value);
     const objTaller = parseNum(document.getElementById('obj-taller').value);
@@ -159,7 +167,7 @@ function updateSalesUI() {
     document.getElementById('uti-taller').innerText = formatMoney(utiTaller);
     document.getElementById('uti-total').innerText = formatMoney(utiTotal);
     
-    document.getElementById('alcance-total').innerHTML = `<span style="color: ${alcance < 100 ? '#D34324' : '#43C6DB'}">${alcance}%</span>`;
+    document.getElementById('alcance-total').innerHTML = `<span style="color: ${alcance < 100 ? 'var(--danger)' : 'var(--success)'}">${alcance}%</span>`;
 }
 
 document.addEventListener('click', (e) => {
@@ -186,7 +194,7 @@ document.addEventListener('click', (e) => {
         });
 
         set(ref(dbAcme, `respaldos/${month}`), { ventas: ventasData, compras: comprasData })
-            .then(() => Swal.fire('Guardado', `Respaldo de ${month} guardado en la bóveda de ACME Corp 📦`, 'success'));
+            .then(() => Swal.fire('Guardado', `Respaldo de ${month} guardado en la bóveda corporativa 📦`, 'success'));
     }
 
     if (e.target && e.target.id === 'btn-acme-load') {
@@ -224,7 +232,6 @@ document.addEventListener('click', (e) => {
                     document.getElementById(`comp-obj-${linea}`).value = '0'; document.getElementById(`comp-real-${linea}`).value = '0';
                 });
                 updateComprasUI();
-                Swal.fire('Limpiado', `No hay datos para ${month}. Pantalla reseteada.`, 'info');
             }
         });
     }

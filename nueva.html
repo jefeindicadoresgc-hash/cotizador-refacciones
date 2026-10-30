@@ -30,18 +30,19 @@
         </div>
     </div>
 
+    <!-- NUEVO: TABLA CON LAS 8 COLUMNAS EXACTAS -->
     <div class="table-container disabled-until-vin" id="area-refacciones">
         <table id="tabla-refacciones">
             <thead>
                 <tr>
-                    <th style="width: 50px;">Cant.</th>
-                    <th style="width: 140px;">No. Parte</th>
-                    <th>Descripción</th>
-                    <th style="width: 140px; text-align: center;">Ubicación</th>
-                    <th style="width: 70px; text-align: center;">Disp.</th>
-                    <th style="width: 100px; text-align: right;">Precio Unit.</th>
-                    <th style="width: 100px; text-align: right;">Importe</th>
-                    <th style="width: 60px; text-align: center;">Acción</th>
+                    <th style="width: 8%; text-align:center;">CANT.</th>
+                    <th style="width: 15%;">NO. PARTE</th>
+                    <th style="width: 30%;">DESCRIPCIÓN</th>
+                    <th style="width: 12%; text-align:center;">UBICACIÓN</th>
+                    <th style="width: 10%; text-align:center;">DISP.</th>
+                    <th style="width: 12%; text-align:right;">PRECIO UNIT.</th>
+                    <th style="width: 10%; text-align:right;">IMPORTE</th>
+                    <th style="width: 8%; text-align:center;">ACCIÓN</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -49,17 +50,22 @@
         <button class="btn-secondary" id="btn-add-row" disabled onclick="window.agregarFila()">+ Agregar Refacción</button>
     </div>
 
-    <div class="totales-wrapper disabled-until-vin">
-        <div class="notas">
-            <p><strong>TÉRMINOS Y CONDICIONES IMPORTANTES:</strong></p>
-            <p>1. NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES UNA VEZ ENTREGADAS. PIEZAS ELÉCTRICAS NO TIENEN GARANTÍA.</p>
-            <p>2. Precios en MXN (sin IVA). Precios y existencias sujetos a cambio sin previo aviso. Vigencia de 5 días hábiles.</p>
-            <p>3. Tiempos de entrega en Backorder sujetos a logística del fabricante.</p>
-        </div>
-        <div class="totales-box">
+    <!-- NUEVO: TÉRMINOS Y CONDICIONES ACTUALIZADOS -->
+    <div class="notas" style="font-size:11px; color:#555; line-height: 1.5; padding-right: 20px;">
+        <p style="color:#002C5F; font-weight:800; margin-bottom: 8px; font-size:12px;">TÉRMINOS Y CONDICIONES IMPORTANTES:</p>
+        <p style="margin: 5px 0;">1. No se aceptan cambios ni devoluciones una vez entregadas las refacciones.</p>
+        <p style="margin: 5px 0;">2. Las piezas eléctricas no tienen garantía.</p>
+        <p style="margin: 5px 0;">3. Precios expresados en Moneda Nacional (MXN) con I.V.A. incluido.</p>
+        <p style="margin: 5px 0;">4. Precios y existencias sujetos a cambio sin previo aviso. Vigencia de 5 días hábiles.</p>
+        <p style="margin: 5px 0;">5. La disponibilidad mostrada es de carácter informativo y está sujeta a venta previa.</p>
+        <p style="margin: 5px 0;">6. Tiempos de entrega en Backorder sujetos a logística del fabricante.</p>
+        <p style="margin: 5px 0;">7. Para todos los pedidos se requiere un anticipo del 100% del valor de la pieza.</p>
+    </div>
+        
+        <div class="totales-box" style="text-align: right; margin-top: 20px; font-size:16px; font-weight:800; color:var(--text-main);">
             <div class="total-row"><span>Subtotal:</span> <span id="lbl-subtotal">$0.00</span></div>
             <div class="total-row"><span>IVA (16%):</span> <span id="lbl-iva">$0.00</span></div>
-            <div class="total-row highlight"><span>Total:</span> <span id="lbl-total">$0.00</span></div>
+            <div class="total-row highlight" style="font-size:22px; color:var(--hyundai-blue); margin-top:10px;"><span>Total:</span> <span id="lbl-total">$0.00</span></div>
         </div>
     </div>
 

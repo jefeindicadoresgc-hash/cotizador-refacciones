@@ -14,12 +14,10 @@ window.generarFolioYFecha = function() {
     const folioTxt = document.getElementById('folio-txt');
     const fecha = document.getElementById('fecha');
     
-    // Solo pinta si los elementos ya existen en el DOM
     if(folioTxt) folioTxt.innerText = `COT-${yy}${mm}${dd}-${random}`;
     if(fecha) fecha.value = `${dd}/${mm}/20${yy}`;
 }
 
-// Delegación global para el VIN
 document.addEventListener('input', async (e) => {
     if (e.target && e.target.id === 'vin') {
         const inputElement = e.target;
@@ -51,7 +49,6 @@ document.addEventListener('input', async (e) => {
     }
 });
 
-// Delegación global para botones del cotizador
 document.addEventListener('click', async (e) => {
     if (e.target && e.target.id === 'btn-generar-pdf') {
         const exito = await window.procesarCotizacion(true); 
@@ -250,12 +247,18 @@ window.procesarCotizacion = async function(generarPDF = false) {
         const c = fila.querySelector('.canti').value;
         const np = fila.querySelector('.num-parte').value;
         const desc = fila.querySelector('.descripcion').value;
-        const disp = fila.querySelector('.disp-pieza').value || '0'; 
+        const dispRaw = fila.querySelector('.disp-pieza').value || '0'; 
         const p = parseFloat(fila.querySelector('.precio').value) || 0;
         
         if(np || desc) { 
-            refaccionesParaPDF.push([c, np, desc, disp, `$${p.toFixed(2)}`, `$${(c*p).toFixed(2)}`]);
-            refaccionesParaDB.push({ cantidad: c, numeroParte: np, descripcion: desc, disponibilidad: disp, precioUnitario: p, importe: (c*p) });
+            // 1. MEJORA PDF: Transformamos la cantidad en SÍ o NO para el arreglo del PDF
+            const cantDisp = parseInt(dispRaw);
+            const dispTexto = (cantDisp > 0) ? 'SÍ' : 'NO';
+
+            refaccionesParaPDF.push([c, np, desc, dispTexto, `$${p.toFixed(2)}`, `$${(c*p).toFixed(2)}`]);
+            
+            // Pero en la base de datos sí guardamos el valor real ('0', 'BO', '5')
+            refaccionesParaDB.push({ cantidad: c, numeroParte: np, descripcion: desc, disponibilidad: dispRaw, precioUnitario: p, importe: (c*p) });
         }
     });
 
@@ -275,28 +278,82 @@ window.procesarCotizacion = async function(generarPDF = false) {
 
     window.cotizacionGuardadaEnNube = true;
 
+    // 2. MEJORA PDF: Inyección del diseño corporativo y Términos separados
     if(generarPDF) {
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        doc.setTextColor(0, 44, 95); doc.setFontSize(22); doc.text("HYUNDAI COATZACOALCOS", 14, 20);
-        doc.setFontSize(10); doc.setTextColor(100, 100, 100); doc.text("CRUFER 2000 S. DE R.L. DE C.V.", 14, 27);
-        doc.setTextColor(0, 0, 0); doc.text(`Folio: ${folio}`, 150, 20); doc.text(`Fecha: ${fecha}`, 150, 26);
-        doc.setFontSize(11); doc.text(`VIN: ${vin}`, 14, 40); doc.text(`Modelo: ${modelo}`, 14, 46); doc.text(`Tipo: ${tipo}`, 150, 40);
+        const { jsPDF } = window.jspdf; 
+        const doc = new jsPDF();
+        
+        // ENCABEZADO CORPORATIVO HYUNDAI
+        doc.setFillColor(0, 44, 95); 
+        doc.rect(0, 0, 210, 26, 'F');
+        doc.setTextColor(255, 255, 255); 
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18); 
+        doc.text("COTIZACIÓN DE REFACCIONES", 14, 17);
+        
+        // DATOS DEL CLIENTE
+        doc.setTextColor(45, 55, 72); 
+        doc.setFontSize(10); 
+        doc.setFont("helvetica", "normal");
+        doc.text(`Folio: ${folio}`, 14, 38);
+        doc.text(`Fecha: ${fecha}`, 14, 44);
+        doc.text(`VIN: ${vin}`, 14, 50);
+        doc.text(`Vehículo: ${modelo.toUpperCase()}`, 14, 56);
+        doc.text(`Tipo: ${tipo}`, 150, 38);
 
+        // TABLA AUTOTABLE (Utiliza el arreglo que armamos arriba con los SÍ/NO)
         doc.autoTable({ 
-            startY: 55, head: [['Cant.', 'No. Parte', 'Descripción', 'Disp.', 'P. Unitario', 'Importe']], 
-            body: refaccionesParaPDF, theme: 'striped', headStyles: { fillColor: [0, 44, 95] }, styles: { fontSize: 8 },
-            columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 35 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 15, halign: 'center' }, 4: { cellWidth: 25, halign: 'right' }, 5: { cellWidth: 25, halign: 'right' } }
+            startY: 64, 
+            head: [['CANT.', 'NO. PARTE', 'DESCRIPCIÓN', 'DISP.', 'P. UNITARIO', 'IMPORTE']], 
+            body: refaccionesParaPDF, 
+            theme: 'grid', 
+            headStyles: { fillColor: [0, 44, 95], textColor: 255, fontStyle: 'bold', fontSize: 8 }, 
+            styles: { fontSize: 8, textColor: [45, 55, 72] },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            columnStyles: { 
+                0: { cellWidth: 15, halign: 'center' }, 
+                1: { cellWidth: 35 }, 
+                2: { cellWidth: 'auto' }, 
+                3: { cellWidth: 15, halign: 'center' }, 
+                4: { cellWidth: 25, halign: 'right' }, 
+                5: { cellWidth: 25, halign: 'right' } 
+            }
         });
 
-        let finalY = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(10); doc.text("Subtotal:", 140, finalY); doc.text(document.getElementById('lbl-subtotal').innerText, 175, finalY);
-        doc.text("IVA (16%):", 140, finalY + 6); doc.text(document.getElementById('lbl-iva').innerText, 175, finalY + 6);
-        doc.setFontSize(12); doc.setTextColor(0, 44, 95); doc.text("Total:", 140, finalY + 14); doc.text(document.getElementById('lbl-total').innerText, 175, finalY + 14);
+        let finalY = doc.lastAutoTable.finalY + 12;
         
-        doc.setFontSize(8); doc.setTextColor(100, 100, 100); doc.setFont("helvetica", "bold");
-        doc.text("TÉRMINOS Y CONDICIONES IMPORTANTES:", 14, finalY + 30); doc.setFont("helvetica", "normal");
-        doc.text("1. NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES UNA VEZ ENTREGADAS LAS REFACCIONES. PIEZAS ELÉCTRICAS NO TIENEN GARANTÍA.", 14, finalY + 35);
-        doc.text("2. Precios expresados en Moneda Nacional (MXN) sin I.V.A. Precios y existencias sujetos a cambio sin previo aviso.", 14, finalY + 40);
+        // TOTALES ALINEADOS A LA DERECHA
+        doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.setTextColor(0, 44, 95);
+        doc.text(`TOTAL: ${document.getElementById('lbl-total').innerText}`, 155, finalY);
+        
+        // SEPARADOR Y 7 TÉRMINOS Y CONDICIONES (CON INTERLINEADO)
+        finalY += 15;
+        doc.setDrawColor(226, 232, 240); 
+        doc.setLineWidth(0.5);
+        doc.line(14, finalY, 196, finalY); 
+        
+        finalY += 8;
+        doc.setFontSize(8); doc.setFont("helvetica", "bold"); doc.setTextColor(113, 128, 150);
+        doc.text("TÉRMINOS Y CONDICIONES IMPORTANTES:", 14, finalY);
+        
+        // LOS 7 NUEVOS TÉRMINOS Y CONDICIONES PARA EL PDF
+        doc.setFont("helvetica", "normal");
+        const terminos = [
+            "1. No se aceptan cambios ni devoluciones una vez entregadas las refacciones.",
+            "2. Las piezas eléctricas no tienen garantía.",
+            "3. Precios expresados en Moneda Nacional (MXN) con I.V.A. incluido.",
+            "4. Precios y existencias sujetos a cambio sin previo aviso. Vigencia de 5 días hábiles.",
+            "5. La disponibilidad mostrada es de carácter informativo y está sujeta a venta previa.",
+            "6. Tiempos de entrega en Backorder sujetos a logística del fabricante.",
+            "7. Para todos los pedidos se requiere un anticipo del 100% del valor de la pieza."
+        ];
+        
+        finalY += 6;
+        terminos.forEach(term => {
+            const lineas = doc.splitTextToSize(term, 182); 
+            doc.text(lineas, 14, finalY);
+            finalY += (lineas.length * 4); 
+        });
         
         doc.save(`${folio}_${vin}${window.modoPrueba ? '_PRUEBA' : ''}.pdf`);
     }

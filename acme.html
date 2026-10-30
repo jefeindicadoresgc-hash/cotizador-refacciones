@@ -1,101 +1,95 @@
-<section id="sec-acme" class="acme-theme">
-    <img src="GIF1.gif" class="floating-gif gif-1" alt="Coyote">
-    <img src="GIF2.gif" class="floating-gif gif-2" alt="Coyote">
-    <img src="GIF3.gif" class="floating-gif gif-3" alt="Coyote">
-    <img src="GIF4.gif" class="floating-gif gif-4" alt="Coyote">
-    <img src="GIF5.gif" class="floating-gif gif-5" alt="Coyote">
-    <img src="GIF6.gif" class="floating-gif gif-6" alt="Coyote">
-
-    <div class="acme-header">
+<section id="sec-acme" class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px;">
         <div>
-            <h1>Ventas y Compras (Planta)</h1>
-            <div style="color: #aaa; font-style: italic; font-size: 12px;">Powered by Wile E. Coyote (ACME Corp)</div>
+            <h2 class="card-title"><i class='bx bx-building-house' style="color:var(--hyundai-light); margin-right:8px;"></i> Ventas y Compras (Planta)</h2>
+            <p class="subtitle" style="margin-bottom: 0;">Módulo de Inteligencia de Negocio y Seguimiento Operativo</p>
         </div>
-        <div style="display: flex; gap: 15px; align-items: center; z-index: 10;">
-            <input type="month" id="acme-month" class="val-box" style="width: auto; padding: 6px;">
-            <button id="btn-acme-load" class="acme-btn">⬇️ Cargar</button>
-            <button id="btn-acme-save" class="acme-btn">💾 Guardar Nube</button>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <input type="month" id="acme-month" style="width: auto; padding: 10px; font-weight: bold;">
+            <button id="btn-acme-load" class="btn-primary" style="background: linear-gradient(135deg, var(--hyundai-blue) 0%, #004596 100%);"><i class='bx bx-cloud-download'></i> Cargar</button>
+            <button id="btn-acme-save" class="btn-secondary" style="border: 1px solid #cbd5e1;"><i class='bx bx-cloud-upload'></i> Guardar Nube</button>
         </div>
     </div>
 
-    <div class="acme-grid">
-        <!-- PANEL VENTAS -->
-        <div class="acme-panel">
-            <h2>Ventas Refacciones (Sin IVA)</h2>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <div class="file-upload-group" style="flex: 1; background: #222; padding: 10px; border-radius: 5px;">
-                    <label style="color:#43C6DB">1. Reporte Mostrador:</label><br>
-                    <input type="file" id="acme-file-mostrador" accept=".xls,.xlsx">
-                </div>
-                <div class="file-upload-group" style="flex: 1; background: #222; padding: 10px; border-radius: 5px;">
-                    <label style="color:#43C6DB">2. Reporte Taller:</label><br>
-                    <input type="file" id="acme-file-taller" accept=".xls,.xlsx">
-                </div>
+    <!-- PANEL VENTAS -->
+    <div class="table-container" style="padding: 25px; margin-bottom: 30px; border: 1px solid #e2e8f0; background: #f8fafc;">
+        <h3 style="color: var(--hyundai-blue); margin-top: 0; margin-bottom: 20px;"><i class='bx bx-line-chart'></i> Ventas Refacciones (Sin IVA)</h3>
+        
+        <div class="form-grid" style="margin-bottom: 20px;">
+            <div class="input-group" style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <label style="color:var(--hyundai-blue);">1. Reporte Mostrador (.xlsx):</label>
+                <input type="file" id="acme-file-mostrador" accept=".xls,.xlsx" style="padding: 5px; box-shadow: none; border: none; background: transparent;">
             </div>
-
-            <table class="sales-table">
-                <thead>
-                    <tr>
-                        <th style="text-align: left;">Leyenda</th>
-                        <th>Mostrador</th>
-                        <th>Taller</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="label">Objetivo</td>
-                        <td><input type="text" id="obj-mostrador" class="val-box" value="0"></td>
-                        <td><input type="text" id="obj-taller" class="val-box" value="0"></td>
-                        <td id="obj-total">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Venta</td>
-                        <td><div class="val-box" id="ven-mostrador">0.00</div></td>
-                        <td><div class="val-box" id="ven-taller">0.00</div></td>
-                        <td id="ven-total">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Costo</td>
-                        <td><div class="val-box" id="cos-mostrador">0.00</div></td>
-                        <td><div class="val-box" id="cos-taller">0.00</div></td>
-                        <td id="cos-total">$0.00</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Utilidad</td>
-                        <td id="uti-mostrador">$0.00</td>
-                        <td id="uti-taller">$0.00</td>
-                        <td id="uti-total">$0.00</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="alcance">ALCANCE TOTAL: <span id="alcance-total">0%</span></div>
+            <div class="input-group" style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                <label style="color:var(--hyundai-blue);">2. Reporte Taller (.xlsx):</label>
+                <input type="file" id="acme-file-taller" accept=".xls,.xlsx" style="padding: 5px; box-shadow: none; border: none; background: transparent;">
+            </div>
         </div>
 
-        <!-- PANEL COMPRAS -->
-        <div class="acme-panel">
-            <h2>Compras VS Objetivos</h2>
-            <table class="sales-table">
-                <thead>
-                    <tr>
-                        <th style="text-align: left; color: #43C6DB;">Líneas</th>
-                        <th style="color: #43C6DB;">Objetivo</th>
-                        <th style="color: #43C6DB;">Compras</th>
-                        <th style="color: #43C6DB;">Alcance</th>
-                        <th style="color: #43C6DB;">Diferencia</th>
-                    </tr>
-                </thead>
-                <tbody id="compras-tbody"></tbody>
-                <tfoot>
-                    <tr style="background-color: #D34324; color: white;">
-                        <td style="padding: 10px; border-radius: 5px 0 0 5px;">TOTALES</td>
-                        <td id="comp-obj-total" style="padding: 10px;">$0.00</td>
-                        <td id="comp-real-total" style="padding: 10px;">$0.00</td>
-                        <td id="comp-alcance-total" style="padding: 10px;">0%</td>
-                        <td id="comp-dif-total" style="padding: 10px; border-radius: 0 5px 5px 0;">$0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <table class="acme-data-table">
+            <thead>
+                <tr>
+                    <th style="text-align: left; width: 25%;">Concepto</th>
+                    <th style="text-align: center; width: 25%;">Mostrador</th>
+                    <th style="text-align: center; width: 25%;">Taller</th>
+                    <th style="text-align: right; width: 25%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight: 800; color: var(--text-muted);">Objetivo</td>
+                    <td><input type="text" id="obj-mostrador" style="text-align: center;" value="0"></td>
+                    <td><input type="text" id="obj-taller" style="text-align: center;" value="0"></td>
+                    <td id="obj-total" style="text-align: right; font-weight: bold; color: var(--hyundai-blue);">$0.00</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 800; color: var(--text-muted);">Venta</td>
+                    <td id="ven-mostrador" style="text-align: center; font-weight: bold;">0.00</td>
+                    <td id="ven-taller" style="text-align: center; font-weight: bold;">0.00</td>
+                    <td id="ven-total" style="text-align: right; font-weight: bold; color: var(--hyundai-blue);">$0.00</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 800; color: var(--text-muted);">Costo</td>
+                    <td id="cos-mostrador" style="text-align: center; font-weight: bold;">0.00</td>
+                    <td id="cos-taller" style="text-align: center; font-weight: bold;">0.00</td>
+                    <td id="cos-total" style="text-align: right; font-weight: bold; color: var(--hyundai-blue);">$0.00</td>
+                </tr>
+                <tr style="background-color: #f1f5f9;">
+                    <td style="font-weight: 800; color: var(--hyundai-blue);">Utilidad</td>
+                    <td id="uti-mostrador" style="text-align: center; font-weight: bold;">$0.00</td>
+                    <td id="uti-taller" style="text-align: center; font-weight: bold;">$0.00</td>
+                    <td id="uti-total" style="text-align: right; font-weight: bold; color: var(--success);">$0.00</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="text-align: right; margin-top: 15px; font-size: 16px; font-weight: 800; color: var(--text-main);">
+            ALCANCE TOTAL: <span id="alcance-total" style="font-size: 22px;">0%</span>
         </div>
+    </div>
+
+    <!-- PANEL COMPRAS -->
+    <div class="table-container" style="padding: 25px; border: 1px solid #e2e8f0; background: #f8fafc;">
+        <h3 style="color: var(--hyundai-blue); margin-top: 0; margin-bottom: 20px;"><i class='bx bx-cart'></i> Compras VS Objetivos</h3>
+        <table class="acme-data-table">
+            <thead>
+                <tr>
+                    <th style="text-align: left; width: 25%;">Líneas</th>
+                    <th style="text-align: center; width: 20%;">Objetivo</th>
+                    <th style="text-align: center; width: 20%;">Compras Reales</th>
+                    <th style="text-align: center; width: 15%;">Alcance</th>
+                    <th style="text-align: right; width: 20%;">Faltante / Excedente</th>
+                </tr>
+            </thead>
+            <tbody id="compras-tbody"></tbody>
+            <tfoot>
+                <tr style="background: linear-gradient(135deg, var(--hyundai-blue) 0%, #004596 100%); color: white;">
+                    <td style="font-weight: 800; border-radius: 8px 0 0 8px;">TOTALES</td>
+                    <td id="comp-obj-total" style="text-align: center; font-weight: bold;">$0.00</td>
+                    <td id="comp-real-total" style="text-align: center; font-weight: bold;">$0.00</td>
+                    <td id="comp-alcance-total" style="text-align: center; font-weight: bold; font-size: 14px;">0%</td>
+                    <td id="comp-dif-total" style="text-align: right; font-weight: bold; border-radius: 0 8px 8px 0;">$0.00</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 </section>
